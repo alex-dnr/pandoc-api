@@ -11,6 +11,29 @@ import { ApiError, errorHandler } from './errors';
 import { storage, uploadRaw } from './storage';
 
 const packageJson = require('../package.json');
+const API_TOKEN = process.env.API_TOKEN;
+
+function validateApiToken(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  const token = req.headers["x-api-token"];
+
+  if (!API_TOKEN) {
+    throw new ApiError(
+      500,
+      "api_token_not_configured",
+      "API token is not configured on the server"
+    );
+  }
+
+  if (!token || token !== API_TOKEN) {
+    throw new ApiError(401, "unauthorized", "Invalid or missing API token");
+  }
+
+  next();
+}
 
 export function createApp() {
   const app = express();
@@ -24,6 +47,7 @@ export function createApp() {
     res.set('X-Powered-By', `${packageJson.name}@${packageJson.version}`)
     next();
   });
+  app.use("/api", validateApiToken);
 
   app.get('/', (req, res, next) => {
     res.redirect('/api');

@@ -3,6 +3,11 @@ import { Converter } from './converter';
 const packageJson = require('../package.json');
 const productName = packageJson.name;
 
+if (!process.env.API_TOKEN) {
+  console.warn(
+    "Warning: API_TOKEN environment variable is not set. The server will not be secure!"
+  );
+}
 const argv = [...process.argv].slice(2);
 
 function startServer(port?: string, hostname?: string) {
